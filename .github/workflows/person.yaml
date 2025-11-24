@@ -1,0 +1,48 @@
+name: Person Blob Storage Image Build
+
+on:
+  schedule:
+    # Runs every Sunday at 04:00 UTC
+    - cron: '0 4 * * 0'
+  workflow_dispatch:
+
+jobs:
+  blob-build:
+    name: build-and-push
+    runs-on: ubuntu-latest
+
+    permissions:
+      packages: write
+      contents: read
+
+    env:
+      IMAGE_NAME: ghcr.io/${{ github.repository }}/blob-person:latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build Azurite image with Person CSVs
+        run: |
+          docker build -t $IMAGE_NAME -f- . <<'EOF'
+          FROM mcr.microsoft.com/azure-storage/azurite
+
+          # Create a directory to simulate blob storage contents
+          RUN mkdir -p /data/blob/person
+
+          # Copy person CSVs into the blob directory
+          COPY csv/person/*.csv /data/blob/person/
+
+          # Default Azurite command (already provided by base image)
+          CMD ["azurite", "--blobHost", "0.0.0.0", "--blobPort", "10000", "--location", "/data/blob", "--silent"]
+          EOF
+
+      - name: Push image
+        run: docker push $IMAGE_NAME
