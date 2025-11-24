@@ -1,0 +1,67 @@
+name: Purchasing SQL Server Image Build
+
+on:
+  schedule:
+    # Runs every Sunday at 02:00 UTC
+    - cron: '0 2 * * 0'
+  workflow_dispatch:
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    permissions:
+      packages: write
+      contents: read
+
+    env:
+      IMAGE_NAME: ghcr.io/${{ github.repository }}/adventureworks-purchasing:latest
+      CONTAINER_NAME: sqlrestore
+      SA_PASSWORD: "YourStrong@Passw0rd"
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Start SQL Server container (minimal base)
+        run: |
+          docker run --rm -d --name $CONTAINER_NAME \
+            -e ACCEPT_EULA=Y \
+            -e SA_PASSWORD="$SA_PASSWORD" \
+            mcr.microsoft.com/mssql/server:2022-latest
+
+          # Wait for SQL Server to be ready
+          sleep 30
+
+      - name: Copy .bak file into SQL Server container
+        run: |
+          docker cp ./bakfiles/Purchasing.bak \
+            $CONTAINER_NAME:/var/backups/Purchasing.bak
+
+      - name: Restore DB using tools container
+        run: |
+          # Run sqlcmd from the tools container, connecting to the SQL Server container
+          docker run --rm --network container:$CONTAINER_NAME \
+            -v $(pwd)/bakfiles/purchasing:/var/backups \
+            mcr.microsoft.com/mssql-tools \
+            /opt/mssql-tools/bin/sqlcmd \
+              -S localhost -U SA -P "$SA_PASSWORD" \
+              -Q "RESTORE DATABASE Purchasing FROM DISK = '/var/backups/Purchasing.bak'
+                  WITH MOVE 'Purchasing' TO '/var/opt/mssql/data/Purchasing.mdf',
+                       MOVE 'Purchasing_log' TO '/var/opt/mssql/data/Purchasing.ldf'"
+
+      - name: Commit container as new image
+        run: |
+          docker commit $CONTAINER_NAME $IMAGE_NAME
+          docker push $IMAGE_NAME
+
+      - name: Cleanup
+        run: |
+          docker rm -f $CONTAINER_NAME
