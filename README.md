@@ -18,7 +18,12 @@ docker run -p 1433:1433 -d ghcr.io/philipbudden/assets/mssql-purchasing:latest
 
 ### sftp-human-resources
 ```shell
-docker run -p 2222:22 -d ghcr.io/philipbudden/assets/sftp-human-resources testuser:testpass:::upload
+docker run -p 2222:22 -d ghcr.io/philipbudden/assets/sftp-human-resources:latest testuser:testpass:::upload
+```
+
+### object-person
+```shell
+docker run -p 10000:10000 -d ghcr.io/philipbudden/assets/object-person:latest
 ```
 
 ## Validate
