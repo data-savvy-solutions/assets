@@ -1,0 +1,40 @@
+name: Human Resources SFTP Image Build
+
+on:
+  schedule:
+    - cron: '0 3 * * 0'
+  workflow_dispatch:
+
+jobs:
+  sftp-build:
+    name: build-and-push
+    runs-on: ubuntu-latest
+
+    permissions:
+      packages: write
+      contents: read
+
+    env:
+      IMAGE_NAME: ghcr.io/${{ github.repository }}/sftp-human-resources:latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build image with CSVs
+        run: |
+          docker build -t $IMAGE_NAME -f- . <<'EOF'
+          FROM atmoz/sftp
+          RUN mkdir -p /home/testuser/upload
+          COPY csv/human_resources/*.csv /home/testuser/upload/
+          EOF
+
+      - name: Push image
+        run: docker push $IMAGE_NAME
