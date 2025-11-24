@@ -16,7 +16,7 @@ jobs:
       contents: read
 
     env:
-      IMAGE_NAME: ghcr.io/${{ github.repository }}/adventureworks-purchasing:latest
+      IMAGE_NAME: ghcr.io/${{ github.repository }}/mssql-purchasing:latest
       CONTAINER_NAME: sqlrestore
       SA_PASSWORD: "YourStrong@Passw0rd"
 
