@@ -16,7 +16,7 @@ jobs:
       contents: read
 
     env:
-      IMAGE_NAME: ghcr.io/${{ github.repository }}/blob-person:latest
+      IMAGE_NAME: ghcr.io/${{ github.repository }}/object-person:latest
 
     steps:
       - name: Checkout repo
