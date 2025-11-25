@@ -1,8 +1,12 @@
-# Assets
+# assets
 
-This repository provides data assets for use in portfolio projects.  
+Providing reproducible, containerised data environments for testing, prototyping, and integration workflows, assets is a collection of datasets derived from the **AdventureWorks 2022 OLTP** sample database, and packaged in multiple formats (CSV, JSON, MSSQL .bak etc).
 
-All datasets are derived from the **AdventureWorks 2022 OLTP** sample database.
+GitHub Action workflows build container images weekly, with ready-to-use data sources — for example:
+
+- SQL Server with the Purchasing schema preloaded
+- SFTP server hosting HR CSV files
+- Azurite with a Blob container of Person CSVs
 
 ---
 
