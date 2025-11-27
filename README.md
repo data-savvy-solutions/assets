@@ -8,6 +8,8 @@ GitHub Action workflows build container images weekly, with ready-to-use data so
 - SFTP server hosting HR CSV files
 - Azurite with a Blob container of Person CSVs
 
+See [packages](https://github.com/orgs/philipbudden/packages?repo_name=assets)
+
 ---
 
 ## Usage
